@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Packing Unit Squares: an interactive guide</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1d2330;--mut:#5b6575;--a:#e8a33d;--b:#3b82c4;--bad:#d64545;--line:#e3dfd6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--card:#1d222b;--ink:#e8ebf0;--mut:#9aa4b2;--a:#d9953a;--b:#5aa0e0;--bad:#e06060;--line:#2c333f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171d;--card:#1d222b;--ink:#e8ebf0;--mut:#9aa4b2;--a:#d9953a;--b:#5aa0e0;--bad:#e06060;--line:#2c333f;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Georgia,"Times New Roman",serif}
+main{max-width:780px;margin:0 auto;padding:24px 18px 64px}
+h1{font-size:1.9rem;line-height:1.2;margin:.2em 0}
+h2{font-size:1.25rem;margin:2.2em 0 .3em;border-top:1px solid var(--line);padding-top:1em}
+h2 span{color:var(--a);font-family:system-ui,sans-serif;font-size:.8em;margin-right:.4em}
+p{margin:.6em 0}.mut{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+.eq{font-family:"Cambria Math",Georgia,serif;font-size:1.1rem;text-align:center;margin:10px 0}
+.row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.row>div{flex:1 1 250px;min-width:0}
+canvas{width:100%;max-width:380px;height:auto;display:block;margin:auto;touch-action:none}
+label{display:block;font:.85rem system-ui,sans-serif;color:var(--mut);margin:8px 0 0}
+input[type=range]{width:100%}
+button{font:.85rem system-ui,sans-serif;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin:4px 4px 0 0;cursor:pointer}
+.stat{font:.9rem system-ui,sans-serif;margin-top:8px}
+.ok{color:#2e9e5b}.no{color:var(--bad)}b.k{color:var(--b)}
+table{border-collapse:collapse;font:.85rem system-ui,sans-serif;width:100%}
+td,th{border-bottom:1px solid var(--line);padding:3px 6px;text-align:left}
+.sc{overflow-x:auto}
+</style></head><body><main>
+<h1>Packing Unit Squares</h1>
+<p class="mut">Pack n unit squares into the smallest possible square container. An old open problem, built up from scratch.</p>
+<div class="card"><b>The challenge.</b> For each n from 1 to 1,000, output a centre (x, y) and a rotation angle (radians) for n squares of side 1. Rules: <b>interiors must not overlap</b> (touching is fine), and the score is <b>L, the side of the tightest axis-aligned square container</b> around them. Smaller L is better. Only a handful of n have proven optimal answers; for the rest, any tighter L is a new record.</div>
+
+<h2><span>1</span>The area bound</h2>
+<p>n unit squares cover area n. A container of side L has area L². So no packing can beat</p>
+<div class="eq">L ≥ √n</div>
+<p>√n is usually not a whole number, so it is only a lower bound: the best L can never be below it, but it is rarely reachable. The dashed square below has side √n. The solid container is the simple grid, with ⌈√n⌉ squares per row, where ⌈√n⌉ means √n rounded <i>up</i> to a whole number.</p>
+<div class="card row"><div><canvas id="c1" width="380" height="380"></canvas></div>
+<div><label>n = <b id="v1"></b><input id="s1" type="range" min="1" max="50" value="10"></label>
+<div class="stat" id="t1"></div></div></div>
+
+<h2><span>2</span>How much room is there to improve?</h2>
+<p>The grid wastes ⌈√n⌉² − n cells. For n = k² it is perfect (and optimal). For n = k² + 1 the grid jumps to side k + 1, yet the area bound √n is only a little above k. That gap, shown below, is what clever (often tilted) packings try to eat.</p>
+<div class="card"><canvas id="c2" width="760" height="240" style="max-width:760px"></canvas>
+<div class="stat" id="t2">Each bar is the gap ⌈√n⌉ − √n (grid side minus area bound) for n = 1…50; the blue bar is the n chosen in section 1.</div></div>
+<p>Two known facts: n = k² − 1 and n = k² − 2 can’t beat the grid (L = k, proven by Nagamochi), so the interesting n are just above a perfect square, such as 5, 10, 17, 26.</p>
+
+<h2><span>3</span>Why tilting helps: n = 5</h2>
+<p>Grid needs L = 3 for 5 squares. Instead, put four squares in the corners and rotate the fifth by 45° in the middle. Along the container’s diagonal you pass a corner square (√2), the diamond (side 1) and the other corner square (√2):</p>
+<div class="eq">L·√2 = √2 + 1 + √2 &nbsp;⟹&nbsp; L = 2 + 1/√2 ≈ 2.7071</div>
+<p>Drag the angle. At the wrong angle the middle square pokes into the corner squares (red).</p>
+<div class="card row"><div><canvas id="c3" width="380" height="380"></canvas></div>
+<div><label>middle square angle = <b id="v3"></b>°<input id="s3" type="range" min="0" max="90" step="1" value="0"></label>
+<div class="stat" id="t3"></div></div></div>
+
+<h2><span>4</span>Playground: a tiny annealing solver</h2>
+<p>This is the same recipe the challenge suggests: treat overlap as an energy, jiggle squares randomly (simulated annealing), and whenever the layout is valid, shrink the container a little and repair. You can also drag squares by hand and rotate the selected one.</p>
+<div class="card row"><div><canvas id="c4" width="380" height="380"></canvas></div>
+<div><label>n = <b id="v4n"></b><input id="s4n" type="range" min="2" max="30" value="5"></label>
+<label>selected square angle = <b id="v4t"></b>°<input id="s4t" type="range" min="0" max="90" value="0"></label>
+<label>container L = <b id="v4L"></b><input id="s4L" type="range" min="1" max="8" step="0.01" value="3"></label>
+<div><button id="b1">random start</button><button id="b2">grid start</button><button id="b3">run / stop solver</button></div>
+<div class="stat" id="t4"></div></div></div>
+<p class="mut">It is a toy: it will often stall above the best known L, and the gap shows why this is hard. Serious entries add smarter moves, exact contact constraints and long runs.</p>
+
+<h2><span>5</span>What the record table looks like</h2>
+<p>A few best-known values for small n, recalled from Erich Friedman’s “Packing Center” survey (approximate; verify there before relying on them). Compare each with the grid side ⌈√n⌉ and the area bound √n.</p>
+<div class="card sc"><table id="tb"></table></div>
+<p class="mut">For large n the story changes: good packings are mostly a perfect grid with a few rows or strips tilted slightly, and Erdős and Graham showed the wasted area grows more slowly than the container area. That is the regime the n ≈ 1,000 puzzles live in.</p>
+</main>
+<script>
+const $=s=>document.querySelector(s),css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim(),PI=Math.PI,f=(v,d=4)=>v.toFixed(d);
+const hx=(t,a)=>(Math.abs(Math.cos(t-a))+Math.abs(Math.sin(t-a)))/2;
+function pen(A,B){let m=1e9;for(const a of[A.t,A.t+PI/2,B.t,B.t+PI/2]){const o=hx(A.t,a)+hx(B.t,a)-Math.abs((B.x-A.x)*Math.cos(a)+(B.y-A.y)*Math.sin(a));if(o<=0)return 0;if(o<m)m=o}return m}
+function bnd(q,L){const h=hx(q.t,0),k=hx(q.t,PI/2);return Math.max(0,h-q.x)+Math.max(0,q.x+h-L)+Math.max(0,k-q.y)+Math.max(0,q.y+k-L)}
+function Ei(sq,L,i){let e=bnd(sq[i],L)**2;for(let j=0;j<sq.length;j++)if(j!==i)e+=pen(sq[i],sq[j])**2;return e}
+function Etot(sq,L){let e=0;sq.forEach((q,i)=>{e+=bnd(q,L)**2;for(let j=i+1;j<sq.length;j++)e+=pen(q,sq[j])**2});return e}
+function bad(sq,L,tol=1e-6){const s=new Set;sq.forEach((q,i)=>{if(bnd(q,L)>tol)s.add(i);for(let j=i+1;j<sq.length;j++)if(pen(q,sq[j])>tol){s.add(i);s.add(j)}});return s}
+function draw(c,sq,L,sel,bs,extra){const x=c.getContext('2d'),W=c.width,P=12,S=(W-2*P)/L;x.clearRect(0,0,W,W);x.fillStyle=css('--card');x.fillRect(P,P,L*S,L*S);
+(extra||[]).forEach(e=>e(x,P,S));
+sq.forEach((q,i)=>{x.beginPath();[[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].forEach(([u,v],j)=>{const co=Math.cos(q.t),si=Math.sin(q.t),X=P+(q.x+u*co-v*si)*S,Y=P+(L-(q.y+u*si+v*co))*S;j?x.lineTo(X,Y):x.moveTo(X,Y)});x.closePath();x.globalAlpha=.8;x.fillStyle=bs&&bs.has(i)?css('--bad'):css(i===sel?'--b':'--a');x.fill();x.globalAlpha=1;x.lineWidth=1.3;x.strokeStyle=css('--ink');x.stroke()});
+x.lineWidth=2.5;x.strokeStyle=css('--ink');x.strokeRect(P,P,L*S,L*S)}
+const gridSq=(n,L)=>{const k=Math.ceil(Math.sqrt(n)),a=[];for(let i=0;i<n;i++)a.push({x:.5+i%k+(L-k)/2,y:.5+Math.floor(i/k)+(L-k)/2,t:0});return a};
+// 1
+function r1(){const n=+$('#s1').value,k=Math.ceil(Math.sqrt(n)),r=Math.sqrt(n);$('#v1').textContent=n;
+draw($('#c1'),gridSq(n,k),k,-1,null,[(x,P,S)=>{x.strokeStyle=css('--b');x.setLineDash([6,5]);x.lineWidth=2;x.strokeRect(P,P+(k-r)*S,r*S,r*S);x.setLineDash([])}]);
+$('#t1').innerHTML=`area bound √n = <b class="k">${f(r)}</b> (not a whole number)<br>grid side ⌈√n⌉ (√n rounded up) = ${k}<br>wasted cells = ${k*k-n} (${f(100*(k*k-n)/(k*k),1)}% of the container)`}
+// 2
+function r2(){const c=$('#c2'),x=c.getContext('2d'),W=c.width,H=c.height,N=50,bw=W/N,sc=(H-34)/1;x.clearRect(0,0,W,H);
+for(let n=1;n<=N;n++){const g=Math.ceil(Math.sqrt(n))-Math.sqrt(n);x.fillStyle=css(n===+$('#s1').value?'--b':'--a');x.fillRect((n-1)*bw+2,H-22-g*sc,bw-4,g*sc);if(n%5===0||n===1){x.fillStyle=css('--mut');x.font='12px system-ui';x.textAlign='center';x.fillText(n,(n-.5)*bw,H-6)}}}
+// 3
+function r3(){const d=+$('#s3').value,L=2+Math.SQRT1_2,m=L/2;$('#v3').textContent=d;const sq=[{x:.5,y:.5,t:0},{x:L-.5,y:.5,t:0},{x:.5,y:L-.5,t:0},{x:L-.5,y:L-.5,t:0},{x:m,y:m,t:d*PI/180}],b=bad(sq,L,1e-6);
+draw($('#c3'),sq,L,4,b);$('#t3').innerHTML=`container L = 2 + 1/√2 = ${f(L)}<br>${b.size?'<span class="no">overlap: invalid at this angle</span>':'<span class="ok">valid packing of 5 squares</span>'}`}
+// 4 solver
+let S4=[],sel=-1,drag=null,run=false,best=null,fr=0,L4=3;
+const rnd=()=>Math.random();
+function start(grid){const n=+$('#s4n').value,k=Math.ceil(Math.sqrt(n));L4=grid?k:k+.5;S4=grid?gridSq(n,L4):Array.from({length:n},()=>({x:.6+rnd()*(L4-1.2),y:.6+rnd()*(L4-1.2),t:rnd()*PI/2}));sel=0;best=null;run=false;fr=0;r4()}
+function r4(){const n=S4.length,b=bad(S4,L4);$('#v4n').textContent=$('#s4n').value;$('#v4L').textContent=f(L4,3);$('#s4L').value=L4;if(sel>=0&&S4[sel]){$('#s4t').value=((S4[sel].t*180/PI)%90+90)%90;$('#v4t').textContent=Math.round(((S4[sel].t*180/PI)%90+90)%90)}
+draw($('#c4'),S4,L4,sel,b);const fl=Math.sqrt(n),g=Math.ceil(fl);$('#t4').innerHTML=`${b.size?`<span class="no">${b.size} square(s) overlap or stick out</span>`:'<span class="ok">valid packing</span>'} ${run?'· solver running…':''}<br>L = <b class="k">${f(L4,3)}</b> &nbsp; area bound √n = ${f(fl,3)} &nbsp; grid side ⌈√n⌉ = ${g}<br>${best?`best valid L found: <b class="k">${f(best.L,4)}</b>`:''}`}
+function tick(){if(run){const n=S4.length,st=Math.max(.002,.05*Math.pow(.97,fr)),T=1e-3*st;
+for(let m=0;m<60*n;m++){const i=Math.floor(rnd()*n),o={...S4[i]},e0=Ei(S4,L4,i);S4[i].x+=(rnd()-.5)*st;S4[i].y+=(rnd()-.5)*st;S4[i].t+=(rnd()-.5)*st*1.5;const e1=Ei(S4,L4,i);if(e1>e0&&rnd()>=Math.exp(-(e1-e0)/T))S4[i]=o}
+fr++;if(Etot(S4,L4)<1e-10){best={L:L4,sq:S4.map(q=>({...q}))};const s=.996;L4*=s;S4.forEach(q=>{q.x*=s;q.y*=s});fr=0}
+else if(fr>250){run=false;if(best){L4=best.L;S4=best.sq}}
+r4()}requestAnimationFrame(tick)}
+$('#b1').onclick=()=>start(false);$('#b2').onclick=()=>start(true);$('#b3').onclick=()=>{run=!run;fr=0;r4()};
+$('#s4n').oninput=()=>start(false);
+$('#s4L').oninput=e=>{L4=+e.target.value;r4()};
+$('#s4t').oninput=e=>{if(S4[sel]){S4[sel].t=e.target.value*PI/180;r4()}};
+const c4=$('#c4');function pt(e){const r=c4.getBoundingClientRect(),P=12,S=(c4.width-24)/L4;return[((e.clientX-r.left)*c4.width/r.width-P)/S,L4-((e.clientY-r.top)*c4.height/r.height-P)/S]}
+c4.onpointerdown=e=>{const[px,py]=pt(e);sel=-1;for(let i=S4.length-1;i>=0;i--){const q=S4[i],dx=px-q.x,dy=py-q.y,u=dx*Math.cos(q.t)+dy*Math.sin(q.t),v=-dx*Math.sin(q.t)+dy*Math.cos(q.t);if(Math.abs(u)<=.5&&Math.abs(v)<=.5){sel=i;drag=[dx,dy];c4.setPointerCapture(e.pointerId);break}}r4()};
+c4.onpointermove=e=>{if(drag&&sel>=0){const[px,py]=pt(e);S4[sel].x=px-drag[0];S4[sel].y=py-drag[1];r4()}};c4.onpointerup=()=>drag=null;
+// 5 table
+const KB=[[1,1],[2,2],[3,2],[4,2],[5,2+Math.SQRT1_2],[6,3],[9,3],[10,3+Math.SQRT1_2],[11,3.8771],[17,4.6756],[18,(7+Math.sqrt(7))/2],[19,3+4*Math.SQRT2/3],[26,3.5+1.5*Math.SQRT2],[27,5+Math.SQRT1_2],[28,3+2*Math.SQRT2],[29,5.9344]];
+$('#tb').innerHTML='<tr><th>n</th><th>best-known L</th><th>grid ⌈√n⌉</th><th>area bound √n</th><th>saved vs grid</th></tr>'+KB.map(([n,l])=>`<tr><td>${n}</td><td>${f(l)}</td><td>${Math.ceil(Math.sqrt(n))}</td><td>${f(Math.sqrt(n))}</td><td>${f(Math.ceil(Math.sqrt(n))-l)}</td></tr>`).join('');
+function all(){r1();r2();r3();r4()}
+$('#s1').oninput=()=>{r1();r2()};$('#s3').oninput=r3;
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',all);
+start(false);all();requestAnimationFrame(tick);
+</script></body></html>
